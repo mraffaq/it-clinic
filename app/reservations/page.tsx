@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/components/providers/auth-provider'
+import { bookingFormSchema, type BookingFormData } from '@/lib/validations/booking'
+import { useToast } from '@/components/providers/toast-provider'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -74,9 +76,11 @@ export default function ReservationsPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
   const supabase = createClient()
+  const { success, error: showError } = useToast()
 
   const [services, setServices] = useState<any[]>([])
   const [reservations, setReservations] = useState<any[]>([])
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof BookingFormData, string>>>({})
   const [formData, setFormData] = useState({
     serviceId: '',
     bookingDate: '',
@@ -86,7 +90,7 @@ export default function ReservationsPage() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
+  
   const [activeTab, setActiveTab] = useState('new')
   const [isLoading, setIsLoading] = useState(true)
 
@@ -127,23 +131,49 @@ export default function ReservationsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setFormErrors({})
     setError('')
-    setSuccess(false)
 
-    if (!formData.serviceId || !formData.bookingDate || !formData.bookingTime) {
-      setError('Please select a service, date, and time')
+    if (!user?.id) {
+      showError('Anda harus login terlebih dahulu')
+      router.push('/auth/login')
+      return
+    }
+
+    // Validate with Zod
+    const validationResult = bookingFormSchema.safeParse(formData)
+
+    if (!validationResult.success) {
+      const errors: Partial<Record<keyof BookingFormData, string>> = {}
+      validationResult.error.errors.forEach((err) => {
+        const path = err.path[0] as keyof BookingFormData
+        errors[path] = err.message
+      })
+      setFormErrors(errors)
+      showError('Mohon periksa kembali form yang diisi')
       return
     }
 
     setIsSubmitting(true)
 
-    if (!user?.id) {
-      setError('You must be logged in to make a reservation')
-      setIsSubmitting(false)
-      return
-    }
-
     try {
+      // Check for existing booking on same date/time
+      const { data: existingBooking } = await supabase
+        .from('reservations')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('booking_date', formData.bookingDate)
+        .eq('booking_time', formData.bookingTime)
+        .not('status', 'eq', 'cancelled')
+        .single()
+
+      if (existingBooking) {
+        showError('Anda sudah memiliki booking pada tanggal dan waktu yang sama')
+        setFormErrors({ bookingDate: 'Sudah ada booking pada tanggal ini', bookingTime: 'Pilih waktu lain' })
+        setIsSubmitting(false)
+        return
+      }
+
       const { error: submitError } = await supabase.from('reservations').insert({
         user_id: user.id,
         service_id: formData.serviceId,
@@ -155,9 +185,18 @@ export default function ReservationsPage() {
         repair_status: 'registered',
       })
 
-      if (submitError) throw submitError
+      if (submitError) {
+        if (submitError.code === '23505') {
+          showError('Anda sudah memiliki booking pada tanggal dan waktu yang sama')
+          setFormErrors({ bookingDate: 'Sudah ada booking', bookingTime: 'Pilih waktu lain' })
+        } else {
+          throw submitError
+        }
+        return
+      }
 
-      setSuccess(true)
+      success('Reservasi berhasil dibuat!', 'Kami akan segera mengkonfirmasi jadwal Anda')
+
       setFormData({
         serviceId: '',
         bookingDate: '',
@@ -179,7 +218,7 @@ export default function ReservationsPage() {
       if (reservationsData) setReservations(reservationsData)
       setActiveTab('history')
     } catch (err: any) {
-      setError(err.message || 'Failed to create reservation')
+      showError('Gagal membuat reservasi', err.message)
     } finally {
       setIsSubmitting(false)
     }
@@ -242,15 +281,6 @@ export default function ReservationsPage() {
                   </Alert>
                 )}
 
-                {success && (
-                  <Alert className="mb-4 border-emerald-500/50 text-emerald-500">
-                    <CheckCircle2 className="h-4 w-4" />
-                    <AlertDescription>
-                      Reservasi berhasil dibuat! Kami akan konfirmasi jadwal Anda.
-                    </AlertDescription>
-                  </Alert>
-                )}
-
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="service">Pilih Layanan *</Label>
@@ -260,7 +290,7 @@ export default function ReservationsPage() {
                         setFormData({ ...formData, serviceId: value })
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className={formErrors.serviceId ? 'border-destructive' : ''}>
                         <SelectValue placeholder="Pilih layanan..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -271,6 +301,9 @@ export default function ReservationsPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {formErrors.serviceId && (
+                      <p className="text-sm text-destructive">{formErrors.serviceId}</p>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -284,8 +317,12 @@ export default function ReservationsPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, bookingDate: e.target.value })
                         }
+                        className={formErrors.bookingDate ? 'border-destructive' : ''}
                         required
                       />
+                      {formErrors.bookingDate && (
+                        <p className="text-sm text-destructive">{formErrors.bookingDate}</p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -296,7 +333,7 @@ export default function ReservationsPage() {
                           setFormData({ ...formData, bookingTime: value })
                         }
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className={formErrors.bookingTime ? 'border-destructive' : ''}>
                           <SelectValue placeholder="Pilih waktu..." />
                         </SelectTrigger>
                         <SelectContent>
@@ -307,6 +344,9 @@ export default function ReservationsPage() {
                           ))}
                         </SelectContent>
                       </Select>
+                      {formErrors.bookingTime && (
+                        <p className="text-sm text-destructive">{formErrors.bookingTime}</p>
+                      )}
                     </div>
                   </div>
 
