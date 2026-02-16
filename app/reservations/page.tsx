@@ -103,12 +103,18 @@ export default function ReservationsPage() {
 
     setIsSubmitting(true)
 
+    if (!user?.id) {
+      setError('You must be logged in to make a reservation')
+      setIsSubmitting(false)
+      return
+    }
+
     try {
       const { error: submitError } = await supabase.from('reservations').insert({
-        user_id: user?.id,
+        user_id: user.id,
         service_id: formData.serviceId,
         booking_date: formData.bookingDate,
-        problem_description: formData.problemDescription,
+        problem_description: formData.problemDescription || null,
         status: 'pending',
       })
 
