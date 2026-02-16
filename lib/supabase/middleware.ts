@@ -35,13 +35,33 @@ export const updateSession = async (request: NextRequest) => {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Protect admin routes
-  if (request.nextUrl.pathname.startsWith('/admin')) {
+  const pathname = request.nextUrl.pathname
+
+  // Protected routes that require authentication
+  const protectedRoutes = ['/reservations', '/dashboard']
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
+
+  // Admin routes
+  const adminRoutes = ['/admin']
+  const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route))
+
+  // Auth routes (login/register)
+  const authRoutes = ['/auth/login', '/auth/register']
+  const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
+
+  // Redirect unauthenticated users from protected routes
+  if (isProtectedRoute && !user) {
+    const redirectUrl = new URL('/auth/login', request.url)
+    redirectUrl.searchParams.set('redirect', pathname)
+    return NextResponse.redirect(redirectUrl)
+  }
+
+  // Protect admin routes - check admin role
+  if (isAdminRoute) {
     if (!user) {
       return NextResponse.redirect(new URL('/auth/login', request.url))
     }
 
-    // Check if user is admin
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -54,7 +74,7 @@ export const updateSession = async (request: NextRequest) => {
   }
 
   // Redirect authenticated users away from auth pages
-  if (user && (request.nextUrl.pathname.startsWith('/auth/login') || request.nextUrl.pathname.startsWith('/auth/register'))) {
+  if (user && isAuthRoute) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
