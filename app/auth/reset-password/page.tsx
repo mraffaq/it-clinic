@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -9,34 +9,58 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react'
+import { Lock, Eye, EyeOff, CheckCircle } from 'lucide-react'
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('')
+export default function ResetPasswordPage() {
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
+  useEffect(() => {
+    // Check if we have a session (user clicked the reset link)
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        setError('Invalid or expired reset link. Please request a new one.')
+      }
+    }
+    checkSession()
+  }, [supabase])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters')
+      return
+    }
+
     setIsLoading(true)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const { error } = await supabase.auth.updateUser({
+        password: password,
       })
 
       if (error) throw error
 
-      router.push('/')
-      router.refresh()
+      setSuccess(true)
+      setTimeout(() => {
+        router.push('/auth/login')
+      }, 2000)
     } catch (err: any) {
-      setError(err.message || 'Invalid email or password')
+      setError(err.message || 'Failed to reset password')
     } finally {
       setIsLoading(false)
     }
@@ -52,9 +76,9 @@ export default function LoginPage() {
                 <Lock className="h-6 w-6 text-white" />
               </div>
             </div>
-            <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
+            <CardTitle className="text-2xl text-center">Set New Password</CardTitle>
             <CardDescription className="text-center">
-              Enter your credentials to access your account
+              Enter your new password below
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -64,33 +88,18 @@ export default function LoginPage() {
               </Alert>
             )}
 
+            {success && (
+              <Alert className="mb-4 border-green-500 text-green-700">
+                <CheckCircle className="h-4 w-4 mr-2" />
+                <AlertDescription>
+                  Password reset successful! Redirecting to login...
+                </AlertDescription>
+              </Alert>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="name@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <Link
-                    href="/auth/forgot-password"
-                    className="text-sm text-primary hover:underline"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
+                <Label htmlFor="password">New Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -101,6 +110,7 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10 pr-10"
                     required
+                    disabled={success}
                   />
                   <Button
                     type="button"
@@ -118,27 +128,37 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="confirmPassword"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="pl-10"
+                    required
+                    disabled={success}
+                  />
+                </div>
+              </div>
+
               <Button
                 type="submit"
                 className="w-full gradient-bg border-0"
-                disabled={isLoading}
+                disabled={isLoading || success}
               >
-                {isLoading ? (
-                  'Signing in...'
-                ) : (
-                  <>
-                    Sign in
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </>
-                )}
+                {isLoading ? 'Resetting...' : 'Reset Password'}
               </Button>
             </form>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <div className="text-sm text-muted-foreground text-center">
-              Don&apos;t have an account?{' '}
-              <Link href="/auth/register" className="text-primary hover:underline">
-                Sign up
+              Remember your password?{' '}
+              <Link href="/auth/login" className="text-primary hover:underline">
+                Sign in
               </Link>
             </div>
           </CardFooter>

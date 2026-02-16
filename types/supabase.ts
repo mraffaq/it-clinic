@@ -119,6 +119,8 @@ export interface Database {
           booking_time: string | null
           problem_description: string | null
           status: 'pending' | 'confirmed' | 'completed' | 'cancelled'
+          repair_status: 'registered' | 'received' | 'diagnosing' | 'repairing' | 'ready' | 'picked_up' | 'cancelled'
+          device_info: string | null
           admin_notes: string | null
           created_at: string
           updated_at: string
@@ -131,6 +133,8 @@ export interface Database {
           booking_time?: string | null
           problem_description?: string | null
           status?: 'pending' | 'confirmed' | 'completed' | 'cancelled'
+          repair_status?: 'registered' | 'received' | 'diagnosing' | 'repairing' | 'ready' | 'picked_up' | 'cancelled'
+          device_info?: string | null
           admin_notes?: string | null
           created_at?: string
           updated_at?: string
@@ -143,6 +147,8 @@ export interface Database {
           booking_time?: string | null
           problem_description?: string | null
           status?: 'pending' | 'confirmed' | 'completed' | 'cancelled'
+          repair_status?: 'registered' | 'received' | 'diagnosing' | 'repairing' | 'ready' | 'picked_up' | 'cancelled'
+          device_info?: string | null
           admin_notes?: string | null
           created_at?: string
           updated_at?: string

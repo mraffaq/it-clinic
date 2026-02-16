@@ -28,8 +28,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Calendar, Clock, AlertCircle, CheckCircle2, CalendarDays, Plus } from 'lucide-react'
+import { Calendar, Clock, AlertCircle, CheckCircle2, CalendarDays, Plus, Package, Wrench, Truck } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
+import { id } from 'date-fns/locale'
 import { formatRupiah } from '@/lib/currency'
 
 const statusColors: Record<string, 'default' | 'secondary' | 'success' | 'destructive'> = {
@@ -38,6 +39,36 @@ const statusColors: Record<string, 'default' | 'secondary' | 'success' | 'destru
   completed: 'success',
   cancelled: 'destructive',
 }
+
+const repairStatusLabels: Record<string, string> = {
+  registered: 'Terdaftar',
+  received: 'Diterima',
+  diagnosing: 'Diagnosa',
+  repairing: 'Perbaikan',
+  ready: 'Siap Ambil',
+  picked_up: 'Sudah Diambil',
+  cancelled: 'Dibatalkan',
+}
+
+const repairStatusIcons: Record<string, any> = {
+  registered: Calendar,
+  received: Package,
+  diagnosing: Wrench,
+  repairing: Wrench,
+  ready: CheckCircle2,
+  picked_up: Truck,
+  cancelled: AlertCircle,
+}
+
+const timeSlots = [
+  { value: '09:00', label: '09:00 - 10:00' },
+  { value: '10:00', label: '10:00 - 11:00' },
+  { value: '11:00', label: '11:00 - 12:00' },
+  { value: '13:00', label: '13:00 - 14:00' },
+  { value: '14:00', label: '14:00 - 15:00' },
+  { value: '15:00', label: '15:00 - 16:00' },
+  { value: '16:00', label: '16:00 - 17:00' },
+]
 
 export default function ReservationsPage() {
   const { user, isLoading: authLoading } = useAuth()
@@ -49,6 +80,8 @@ export default function ReservationsPage() {
   const [formData, setFormData] = useState({
     serviceId: '',
     bookingDate: '',
+    bookingTime: '',
+    deviceInfo: '',
     problemDescription: '',
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -97,8 +130,8 @@ export default function ReservationsPage() {
     setError('')
     setSuccess(false)
 
-    if (!formData.serviceId || !formData.bookingDate) {
-      setError('Please select a service and date')
+    if (!formData.serviceId || !formData.bookingDate || !formData.bookingTime) {
+      setError('Please select a service, date, and time')
       return
     }
 
@@ -115,14 +148,23 @@ export default function ReservationsPage() {
         user_id: user.id,
         service_id: formData.serviceId,
         booking_date: formData.bookingDate,
+        booking_time: formData.bookingTime,
+        device_info: formData.deviceInfo || null,
         problem_description: formData.problemDescription || null,
         status: 'pending',
+        repair_status: 'registered',
       })
 
       if (submitError) throw submitError
 
       setSuccess(true)
-      setFormData({ serviceId: '', bookingDate: '', problemDescription: '' })
+      setFormData({
+        serviceId: '',
+        bookingDate: '',
+        bookingTime: '',
+        deviceInfo: '',
+        problemDescription: ''
+      })
 
       // Refresh reservations
       const { data: reservationsData } = await supabase
@@ -165,10 +207,10 @@ export default function ReservationsPage() {
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">
-            Service <span className="gradient-text">Reservations</span>
+            Reservasi <span className="gradient-text">Layanan</span>
           </h1>
           <p className="text-muted-foreground">
-            Book a service appointment or view your reservation history.
+            Booking layanan service dan tracking status perbaikan perangkat Anda.
           </p>
         </div>
 
@@ -176,20 +218,20 @@ export default function ReservationsPage() {
           <TabsList className="mb-6">
             <TabsTrigger value="new">
               <Plus className="h-4 w-4 mr-2" />
-              New Booking
+              Booking Baru
             </TabsTrigger>
             <TabsTrigger value="history">
               <CalendarDays className="h-4 w-4 mr-2" />
-              My Reservations ({reservations.length})
+              Riwayat ({reservations.length})
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="new">
             <Card>
               <CardHeader>
-                <CardTitle>Book a Service</CardTitle>
+                <CardTitle>Booking Layanan</CardTitle>
                 <CardDescription>
-                  Fill out the form below to schedule your service appointment.
+                  Isi form di bawah untuk menjadwalkan service perangkat Anda.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -204,14 +246,14 @@ export default function ReservationsPage() {
                   <Alert className="mb-4 border-emerald-500/50 text-emerald-500">
                     <CheckCircle2 className="h-4 w-4" />
                     <AlertDescription>
-                      Reservation created successfully! We'll confirm your appointment soon.
+                      Reservasi berhasil dibuat! Kami akan konfirmasi jadwal Anda.
                     </AlertDescription>
                   </Alert>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="service">Select Service *</Label>
+                    <Label htmlFor="service">Pilih Layanan *</Label>
                     <Select
                       value={formData.serviceId}
                       onValueChange={(value) =>
@@ -219,7 +261,7 @@ export default function ReservationsPage() {
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Choose a service..." />
+                        <SelectValue placeholder="Pilih layanan..." />
                       </SelectTrigger>
                       <SelectContent>
                         {services.map((service) => (
@@ -231,25 +273,63 @@ export default function ReservationsPage() {
                     </Select>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="date">Preferred Date *</Label>
-                    <Input
-                      id="date"
-                      type="date"
-                      min={getMinDate()}
-                      value={formData.bookingDate}
-                      onChange={(e) =>
-                        setFormData({ ...formData, bookingDate: e.target.value })
-                      }
-                      required
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="date">Tanggal *</Label>
+                      <Input
+                        id="date"
+                        type="date"
+                        min={getMinDate()}
+                        value={formData.bookingDate}
+                        onChange={(e) =>
+                          setFormData({ ...formData, bookingDate: e.target.value })
+                        }
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="time">Waktu *</Label>
+                      <Select
+                        value={formData.bookingTime}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, bookingTime: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih waktu..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {timeSlots.map((slot) => (
+                            <SelectItem key={slot.value} value={slot.value}>
+                              {slot.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="description">Problem Description</Label>
+                    <Label htmlFor="device">Info Perangkat</Label>
+                    <Input
+                      id="device"
+                      placeholder="Contoh: Laptop ASUS X456U, i5-8250U, RAM 8GB"
+                      value={formData.deviceInfo}
+                      onChange={(e) =>
+                        setFormData({ ...formData, deviceInfo: e.target.value })
+                      }
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Sebutkan merk, tipe, dan spesifikasi perangkat Anda
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Deskripsi Masalah</Label>
                     <Textarea
                       id="description"
-                      placeholder="Please describe the issue you're experiencing..."
+                      placeholder="Jelaskan masalah yang dialami perangkat Anda..."
                       rows={4}
                       value={formData.problemDescription}
                       onChange={(e) =>
@@ -263,7 +343,7 @@ export default function ReservationsPage() {
                     className="w-full gradient-bg border-0"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? 'Creating Reservation...' : 'Book Appointment'}
+                    {isSubmitting ? 'Membuat Reservasi...' : 'Booking Sekarang'}
                   </Button>
                 </form>
               </CardContent>
@@ -273,55 +353,72 @@ export default function ReservationsPage() {
           <TabsContent value="history">
             <Card>
               <CardHeader>
-                <CardTitle>My Reservations</CardTitle>
+                <CardTitle>Riwayat Reservasi</CardTitle>
                 <CardDescription>
-                  View and track your service appointments.
+                  Lihat dan tracking status perbaikan perangkat Anda.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {reservations.length === 0 ? (
                   <div className="text-center py-12">
                     <Calendar className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium mb-2">No Reservations Yet</h3>
+                    <h3 className="text-lg font-medium mb-2">Belum Ada Reservasi</h3>
                     <p className="text-muted-foreground mb-4">
-                      You haven't made any service reservations yet.
+                      Anda belum membuat reservasi layanan.
                     </p>
                     <Button onClick={() => setActiveTab('new')} className="gradient-bg border-0">
-                      Book Your First Service
+                      Booking Layanan Pertama
                     </Button>
                   </div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Service</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Booked On</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {reservations.map((reservation) => (
-                        <TableRow key={reservation.id}>
-                          <TableCell className="font-medium">
-                            {reservation.service?.name}
-                          </TableCell>
-                          <TableCell>
-                            {format(parseISO(reservation.booking_date), 'MMM d, yyyy')}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={statusColors[reservation.status]}>
-                              {reservation.status.charAt(0).toUpperCase() +
-                                reservation.status.slice(1)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {format(parseISO(reservation.created_at), 'MMM d, yyyy')}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <div className="space-y-4">
+                    {reservations.map((reservation) => {
+                      const RepairIcon = repairStatusIcons[reservation.repair_status] || Package
+                      return (
+                        <Card key={reservation.id} className="border-l-4 border-l-primary">
+                          <CardContent className="p-4">
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-lg">{reservation.service?.name}</h4>
+                                <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                                  <span className="flex items-center gap-1">
+                                    <Calendar className="h-4 w-4" />
+                                    {format(parseISO(reservation.booking_date), 'dd MMM yyyy', { locale: id })}
+                                  </span>
+                                  {reservation.booking_time && (
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="h-4 w-4" />
+                                      {reservation.booking_time}
+                                    </span>
+                                  )}
+                                </div>
+                                {reservation.device_info && (
+                                  <p className="text-sm mt-2 text-muted-foreground">
+                                    <Package className="inline h-3 w-3 mr-1" />
+                                    {reservation.device_info}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex flex-col items-start md:items-end gap-2">
+                                <Badge variant={statusColors[reservation.status]}>
+                                  {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
+                                </Badge>
+                                <div className={`flex items-center gap-1 text-sm px-2 py-1 rounded-full ${
+                                  reservation.repair_status === 'ready' ? 'bg-green-100 text-green-700' :
+                                  reservation.repair_status === 'repairing' ? 'bg-blue-100 text-blue-700' :
+                                  reservation.repair_status === 'picked_up' ? 'bg-purple-100 text-purple-700' :
+                                  'bg-gray-100 text-gray-700'
+                                }`}>
+                                  <RepairIcon className="h-3 w-3" />
+                                  {repairStatusLabels[reservation.repair_status] || reservation.repair_status}
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
                 )}
               </CardContent>
             </Card>

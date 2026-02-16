@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator'
 import {
   LayoutDashboard,
   Calendar,
+  CalendarDays,
   Package,
   Wrench,
   Users,
@@ -15,9 +16,10 @@ import {
 
 const adminNavItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/reservations', label: 'Reservations', icon: Calendar },
-  { href: '/admin/products', label: 'Products', icon: Package },
-  { href: '/admin/services', label: 'Services', icon: Wrench },
+  { href: '/admin/calendar', label: 'Kalender', icon: CalendarDays },
+  { href: '/admin/reservations', label: 'Reservasi', icon: Calendar },
+  { href: '/admin/products', label: 'Produk', icon: Package },
+  { href: '/admin/services', label: 'Layanan', icon: Wrench },
 ]
 
 export default async function AdminLayout({
