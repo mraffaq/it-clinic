@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Plus, Pencil, Trash2, Search, Package, Upload } from 'lucide-react'
+import { formatRupiah } from '@/lib/currency'
 
 interface Product {
   id: string
@@ -137,9 +138,9 @@ export default function AdminProductsPage() {
   }
 
   const getStockBadge = (stock: number) => {
-    if (stock === 0) return <Badge variant="destructive">Out of Stock</Badge>
-    if (stock <= 5) return <Badge variant="warning">Low Stock</Badge>
-    return <Badge variant="success">In Stock</Badge>
+    if (stock === 0) return <Badge variant="destructive">Stok Habis</Badge>
+    if (stock <= 5) return <Badge variant="warning">Stok Sedikit</Badge>
+    return <Badge variant="success">Tersedia</Badge>
   }
 
   const filteredProducts = products.filter((product) =>
@@ -237,7 +238,7 @@ export default function AdminProductsPage() {
                           '-'
                         )}
                       </TableCell>
-                      <TableCell>${product.price}</TableCell>
+                      <TableCell>{formatRupiah(product.price)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <span>{product.stock}</span>
@@ -310,7 +311,7 @@ export default function AdminProductsPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="price">Price ($) *</Label>
+                <Label htmlFor="price">Harga (Rp) *</Label>
                 <Input
                   id="price"
                   type="number"

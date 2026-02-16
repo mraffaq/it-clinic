@@ -4,14 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { ShoppingBag, Filter, ArrowRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { formatRupiah } from '@/lib/currency'
 
 const categories = [
-  'All Products',
-  'Laptops',
-  'Accessories',
-  'Components',
-  'Networking',
-  'Storage',
+  'Semua Produk',
+  'Laptop',
+  'Aksesoris',
+  'Komponen',
+  'Jaringan',
+  'Penyimpanan',
 ]
 
 export default async function ProductsPage() {
@@ -48,9 +49,9 @@ export default async function ProductsPage() {
             {categories.map((category) => (
               <Button
                 key={category}
-                variant={category === 'All Products' ? 'default' : 'outline'}
+                variant={category === 'Semua Produk' ? 'default' : 'outline'}
                 size="sm"
-                className={category === 'All Products' ? 'gradient-bg border-0' : ''}
+                className={category === 'Semua Produk' ? 'gradient-bg border-0' : ''}
               >
                 {category}
               </Button>
@@ -75,12 +76,12 @@ export default async function ProductsPage() {
                   )}
                   {product.stock === 0 && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <Badge variant="destructive">Out of Stock</Badge>
+                      <Badge variant="destructive">Stok Habis</Badge>
                     </div>
                   )}
                   {product.stock > 0 && product.stock <= 5 && (
                     <div className="absolute top-2 right-2">
-                      <Badge variant="warning">Low Stock</Badge>
+                      <Badge variant="warning">Stok Sedikit</Badge>
                     </div>
                   )}
                 </div>
@@ -97,9 +98,9 @@ export default async function ProductsPage() {
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
                   <div className="flex items-center justify-between">
-                    <p className="text-xl font-bold text-primary">${product.price}</p>
+                    <p className="text-xl font-bold text-primary">{formatRupiah(product.price)}</p>
                     <p className="text-sm text-muted-foreground">
-                      {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+                      {product.stock > 0 ? `${product.stock} tersedia` : 'Stok habis'}
                     </p>
                   </div>
                 </CardContent>

@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Calendar, Search, RefreshCw } from 'lucide-react'
+import { formatRupiah } from '@/lib/currency'
 import { format, parseISO } from 'date-fns'
 
 type ReservationStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled'
@@ -252,7 +253,7 @@ export default function AdminReservationsPage() {
                   <p className="text-sm text-muted-foreground">Service</p>
                   <p className="font-medium">{selectedReservation.service?.name}</p>
                   <p className="text-sm text-primary">
-                    ${selectedReservation.service?.price}
+                    {formatRupiah(selectedReservation.service?.price || 0)}
                   </p>
                 </div>
               </div>

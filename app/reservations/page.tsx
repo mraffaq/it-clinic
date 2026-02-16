@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/table'
 import { Calendar, Clock, AlertCircle, CheckCircle2, CalendarDays, Plus } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
+import { formatRupiah } from '@/lib/currency'
 
 const statusColors: Record<string, 'default' | 'secondary' | 'success' | 'destructive'> = {
   pending: 'default',
@@ -223,7 +224,7 @@ export default function ReservationsPage() {
                       <SelectContent>
                         {services.map((service) => (
                           <SelectItem key={service.id} value={service.id}>
-                            {service.name} - ${service.price}
+                            {service.name} - {formatRupiah(service.price)}
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Monitor, Cpu, Wifi, HardDrive, Smartphone, Printer, Shield, Zap, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { formatRupiah } from '@/lib/currency'
 
 const serviceCategories = [
   { icon: Monitor, name: 'Laptop Repair', count: 8 },
@@ -83,8 +84,8 @@ export default async function ServicesPage() {
                 <CardContent className="flex-1 flex flex-col">
                   <div className="flex items-center justify-between mt-auto pt-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">Starting from</p>
-                      <p className="text-2xl font-bold text-primary">${service.price}</p>
+                      <p className="text-sm text-muted-foreground">Mulai dari</p>
+                      <p className="text-2xl font-bold text-primary">{formatRupiah(service.price)}</p>
                     </div>
                     <Link href={`/services#booking`}>
                       <Button className="gradient-bg border-0">

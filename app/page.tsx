@@ -13,6 +13,7 @@ import {
   ArrowRight
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { formatRupiah } from '@/lib/currency'
 
 const features = [
   {
@@ -42,25 +43,25 @@ const services = [
     icon: Monitor,
     title: 'Laptop Repair',
     description: 'Screen replacement, motherboard repair, battery replacement, and more.',
-    price: 'From $49'
+    price: 'Mulai Rp 750.000'
   },
   {
     icon: Cpu,
     title: 'PC Repair',
     description: 'Hardware diagnostics, component upgrades, and system optimization.',
-    price: 'From $59'
+    price: 'Mulai Rp 900.000'
   },
   {
     icon: Wifi,
     title: 'Network Setup',
     description: 'Home and office network installation, configuration, and troubleshooting.',
-    price: 'From $99'
+    price: 'Mulai Rp 1.500.000'
   },
   {
     icon: HardDrive,
     title: 'Data Recovery',
     description: 'Professional data recovery from damaged drives and storage devices.',
-    price: 'From $149'
+    price: 'Mulai Rp 2.250.000'
   }
 ]
 
@@ -199,7 +200,7 @@ export default async function HomePage() {
                   <CardDescription className="line-clamp-2">{product.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
-                  <p className="text-lg font-bold text-primary">${product.price}</p>
+                  <p className="text-lg font-bold text-primary">{formatRupiah(product.price)}</p>
                 </CardContent>
               </Card>
             )) || (

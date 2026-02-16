@@ -24,6 +24,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Plus, Pencil, Trash2, Search, Wrench } from 'lucide-react'
+import { formatRupiah } from '@/lib/currency'
 
 interface Service {
   id: string
@@ -186,7 +187,7 @@ export default function AdminServicesPage() {
                       <TableCell className="max-w-xs truncate">
                         {service.description || '-'}
                       </TableCell>
-                      <TableCell>${service.price}</TableCell>
+                      <TableCell>{formatRupiah(service.price)}</TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
@@ -252,7 +253,7 @@ export default function AdminServicesPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="price">Price ($) *</Label>
+              <Label htmlFor="price">Harga (Rp) *</Label>
               <Input
                 id="price"
                 type="number"
