@@ -43,6 +43,12 @@ export default function RegisterPage() {
 
     setIsLoading(true)
 
+    // Determine role based on admin key
+    const isAdmin = adminKey === ADMIN_SECRET_KEY
+    const userRole = isAdmin ? 'admin' : 'user'
+
+    setIsLoading(true)
+
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -50,21 +56,12 @@ export default function RegisterPage() {
         options: {
           data: {
             full_name: fullName,
+            role: userRole, // Pass role to trigger
           },
         },
       })
 
       if (error) throw error
-
-      // Update profile role if admin key provided (trigger creates profile automatically)
-      if (data.user && adminKey === ADMIN_SECRET_KEY) {
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ role: 'admin' })
-          .eq('id', data.user.id)
-
-        if (updateError) console.error('Failed to set admin role:', updateError)
-      }
 
       setIsSuccess(true)
     } catch (err: any) {
