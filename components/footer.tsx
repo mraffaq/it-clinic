@@ -106,6 +106,9 @@ export function Footer() {
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} IT Clinic. All rights reserved.
           </p>
+          <p className="text-xs text-muted-foreground mt-2">
+            Created by Raffa Qomarul
+          </p>
         </div>
       </div>
     </footer>

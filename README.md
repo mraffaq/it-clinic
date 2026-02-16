@@ -1,5 +1,7 @@
 # IT Clinic – Service & Tech Store
 
+**Author:** Raffa Qomarul
+
 A modern, production-ready web application for IT service bookings and tech product sales.
 
 ![IT Clinic](https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=80)

@@ -18,6 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "IT Clinic - Service & Tech Store",
   description: "Professional IT services, laptop repair, PC repair, networking solutions, and tech products. Your trusted technology partner.",
+  authors: [{ name: "Raffa Qomarul" }],
 };
 
 export default function RootLayout({

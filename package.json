@@ -2,6 +2,7 @@
   "name": "it-clinic",
   "version": "0.1.0",
   "private": true,
+  "author": "Raffa Qomarul",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
