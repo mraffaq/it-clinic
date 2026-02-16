@@ -28,7 +28,7 @@ import { Plus, Pencil, Trash2, Search, Wrench } from 'lucide-react'
 interface Service {
   id: string
   name: string
-  description: string
+  description: string | null
   price: number
   created_at: string
 }
