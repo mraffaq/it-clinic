@@ -196,24 +196,25 @@ export default function AdminReservationsPage() {
                         {format(parseISO(reservation.created_at), 'MMM d, yyyy')}
                       </TableCell>
                       <TableCell>
-                        <Select
-                          value={reservation.status}
-                          onValueChange={(value) =>
-                            handleStatusChange(reservation.id, value as ReservationStatus)
-                          }
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <SelectTrigger className="w-[130px]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {statusOptions.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <Select
+                            value={reservation.status}
+                            onValueChange={(value) =>
+                              handleStatusChange(reservation.id, value as ReservationStatus)
+                            }
+                          >
+                            <SelectTrigger className="w-[130px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {statusOptions.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
