@@ -31,12 +31,14 @@ import { Input } from '@/components/ui/input'
 import { Calendar, Search, RefreshCw } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 
+type ReservationStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled'
+
 const statusOptions = [
   { value: 'pending', label: 'Pending' },
   { value: 'confirmed', label: 'Confirmed' },
   { value: 'completed', label: 'Completed' },
   { value: 'cancelled', label: 'Cancelled' },
-]
+] as const
 
 const statusColors: Record<string, 'default' | 'secondary' | 'success' | 'destructive'> = {
   pending: 'default',
@@ -72,7 +74,7 @@ export default function AdminReservationsPage() {
     fetchReservations()
   }, [])
 
-  const handleStatusChange = async (reservationId: string, newStatus: string) => {
+  const handleStatusChange = async (reservationId: string, newStatus: ReservationStatus) => {
     const { error } = await supabase
       .from('reservations')
       .update({ status: newStatus })
@@ -197,7 +199,7 @@ export default function AdminReservationsPage() {
                         <Select
                           value={reservation.status}
                           onValueChange={(value) =>
-                            handleStatusChange(reservation.id, value)
+                            handleStatusChange(reservation.id, value as ReservationStatus)
                           }
                           onClick={(e) => e.stopPropagation()}
                         >
