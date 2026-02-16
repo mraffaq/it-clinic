@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/table'
 import { Plus, Pencil, Trash2, Search, Wrench } from 'lucide-react'
 import { formatRupiah } from '@/lib/currency'
+import { useToast } from '@/components/providers/toast-provider'
 
 interface Service {
   id: string
@@ -46,6 +47,7 @@ export default function AdminServicesPage() {
     price: '',
   })
   const supabase = createClient()
+  const { success, error: showError } = useToast()
 
   const fetchServices = async () => {
     setIsLoading(true)
@@ -81,6 +83,9 @@ export default function AdminServicesPage() {
         setServices((prev) =>
           prev.map((s) => (s.id === editingService.id ? { ...s, ...serviceData } : s))
         )
+        success('Layanan berhasil diupdate')
+      } else {
+        showError('Gagal menyimpan layanan', error.message)
       }
     } else {
       const { data, error } = await supabase
@@ -90,6 +95,9 @@ export default function AdminServicesPage() {
 
       if (!error && data) {
         setServices((prev) => [...prev, data[0]])
+        success('Layanan berhasil ditambahkan')
+      } else if (error) {
+        showError('Gagal menyimpan layanan', error.message)
       }
     }
 
@@ -115,6 +123,9 @@ export default function AdminServicesPage() {
 
     if (!error) {
       setServices((prev) => prev.filter((s) => s.id !== id))
+      success('Layanan berhasil dihapus')
+    } else {
+      showError('Gagal menghapus layanan', error.message)
     }
   }
 

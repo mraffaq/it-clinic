@@ -33,6 +33,7 @@ import { Calendar, Search, RefreshCw, Clock, Package, Wrench, CheckCircle, Truck
 import { formatRupiah } from '@/lib/currency'
 import { format, parseISO } from 'date-fns'
 import { id } from 'date-fns/locale'
+import { useToast } from '@/components/providers/toast-provider'
 
 type ReservationStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled'
 type RepairStatus = 'registered' | 'received' | 'diagnosing' | 'repairing' | 'ready' | 'picked_up' | 'cancelled'
@@ -80,6 +81,7 @@ export default function AdminReservationsPage() {
   const [repairStatusFilter, setRepairStatusFilter] = useState<string>('all')
   const [adminNotes, setAdminNotes] = useState('')
   const supabase = createClient()
+  const { success, error: showError } = useToast()
 
   const fetchReservations = async () => {
     setIsLoading(true)
@@ -110,6 +112,9 @@ export default function AdminReservationsPage() {
       setReservations((prev) =>
         prev.map((r) => (r.id === reservationId ? { ...r, status: newStatus } : r))
       )
+      success('Status reservasi berhasil diupdate')
+    } else {
+      showError('Gagal mengupdate status reservasi', error.message)
     }
   }
 
@@ -126,6 +131,9 @@ export default function AdminReservationsPage() {
       if (selectedReservation?.id === reservationId) {
         setSelectedReservation({ ...selectedReservation, repair_status: newStatus })
       }
+      success('Status perbaikan berhasil diupdate')
+    } else {
+      showError('Gagal mengupdate status perbaikan', error.message)
     }
   }
 
@@ -142,6 +150,9 @@ export default function AdminReservationsPage() {
         prev.map((r) => (r.id === selectedReservation.id ? { ...r, admin_notes: adminNotes } : r))
       )
       setSelectedReservation({ ...selectedReservation, admin_notes: adminNotes })
+      success('Catatan admin berhasil disimpan')
+    } else {
+      showError('Gagal menyimpan catatan', error.message)
     }
   }
 

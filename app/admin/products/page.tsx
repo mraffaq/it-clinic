@@ -26,6 +26,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Plus, Pencil, Trash2, Search, Package, Upload } from 'lucide-react'
 import { formatRupiah } from '@/lib/currency'
+import { useToast } from '@/components/providers/toast-provider'
 
 interface Product {
   id: string
@@ -61,6 +62,7 @@ export default function AdminProductsPage() {
     category: '',
   })
   const supabase = createClient()
+  const { success, error: showError } = useToast()
 
   const fetchProducts = async () => {
     setIsLoading(true)
@@ -98,6 +100,9 @@ export default function AdminProductsPage() {
         setProducts((prev) =>
           prev.map((p) => (p.id === editingProduct.id ? { ...p, ...productData } : p))
         )
+        success('Produk berhasil diupdate')
+      } else {
+        showError('Gagal menyimpan produk', error.message)
       }
     } else {
       const { data, error } = await supabase
@@ -107,6 +112,9 @@ export default function AdminProductsPage() {
 
       if (!error && data) {
         setProducts((prev) => [data[0], ...prev])
+        success('Produk berhasil ditambahkan')
+      } else if (error) {
+        showError('Gagal menyimpan produk', error.message)
       }
     }
 
@@ -134,6 +142,9 @@ export default function AdminProductsPage() {
 
     if (!error) {
       setProducts((prev) => prev.filter((p) => p.id !== id))
+      success('Produk berhasil dihapus')
+    } else {
+      showError('Gagal menghapus produk', error.message)
     }
   }
 
