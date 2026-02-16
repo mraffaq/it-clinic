@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,6 +18,8 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirect = searchParams.get('redirect') || '/'
   const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,7 +35,7 @@ export default function LoginPage() {
 
       if (error) throw error
 
-      router.push('/')
+      router.push(redirect)
       router.refresh()
     } catch (err: any) {
       setError(err.message || 'Invalid email or password')
@@ -61,6 +63,14 @@ export default function LoginPage() {
             {error && (
               <Alert variant="destructive" className="mb-4">
                 <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {redirect && redirect !== '/' && (
+              <Alert className="mb-4 bg-blue-50 border-blue-200">
+                <AlertDescription className="text-blue-700">
+                  Silakan login terlebih dahulu untuk mengakses halaman yang diminta
+                </AlertDescription>
               </Alert>
             )}
 
