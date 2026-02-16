@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/components/providers/auth-provider'
 import { useToast } from '@/components/providers/toast-provider'
+import { profileUpdateSchema } from '@/lib/validations/booking'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -150,6 +151,19 @@ export default function DashboardPage() {
 
   const handleUpdateProfile = async () => {
     if (!user) return
+
+    // Validate with Zod
+    const validationResult = profileUpdateSchema.safeParse({
+      fullName,
+      phone,
+      address,
+    })
+
+    if (!validationResult.success) {
+      const errorMessage = validationResult.error.errors[0]?.message || 'Data tidak valid'
+      showError('Validasi gagal', errorMessage)
+      return
+    }
 
     setIsUpdating(true)
     const { error } = await supabase
