@@ -14,6 +14,8 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { formatRupiah } from '@/lib/currency'
+import { Stats } from '@/components/sections/stats'
+import { Testimonials } from '@/components/sections/testimonials'
 
 const features = [
   {
@@ -220,6 +222,12 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Testimonials Section */}
+      <Testimonials />
+
+      {/* Stats Section */}
+      <Stats />
 
       {/* CTA Section */}
       <section className="py-20">
