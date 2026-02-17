@@ -60,6 +60,19 @@ export function Navigation() {
                 {item.label}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                href="/admin/dashboard"
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ${
+                  isActive('/admin')
+                    ? 'text-primary bg-primary/10'
+                    : 'text-amber-600 hover:text-amber-700 hover:bg-amber-50'
+                }`}
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                Admin
+              </Link>
+            )}
           </nav>
 
           {/* User Actions */}
@@ -149,6 +162,20 @@ export function Navigation() {
                         {item.label}
                       </Link>
                     ))}
+                    {isAdmin && (
+                      <Link
+                        href="/admin/dashboard"
+                        onClick={() => setIsOpen(false)}
+                        className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                          isActive('/admin')
+                            ? 'text-primary bg-primary/10'
+                            : 'text-amber-600 hover:text-amber-700 hover:bg-amber-50'
+                        }`}
+                      >
+                        <LayoutDashboard className="h-4 w-4" />
+                        Admin
+                      </Link>
+                    )}
                   </nav>
 
                   <div className="border-t border-border pt-4">
