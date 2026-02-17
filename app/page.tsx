@@ -15,7 +15,7 @@ import {
 import { createClient } from '@/lib/supabase/server'
 import { formatRupiah } from '@/lib/currency'
 import { Stats } from '@/components/sections/stats'
-import { Testimonials } from '@/components/sections/testimonials'
+import { TestimonialsSection as Testimonials } from '@/components/sections/testimonials'
 
 const features = [
   {

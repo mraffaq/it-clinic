@@ -160,7 +160,7 @@ export default function DashboardPage() {
     })
 
     if (!validationResult.success) {
-      const errorMessage = validationResult.error.errors[0]?.message || 'Data tidak valid'
+      const errorMessage = validationResult.error.issues[0]?.message || 'Data tidak valid'
       showError('Validasi gagal', errorMessage)
       return
     }

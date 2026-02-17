@@ -13,23 +13,32 @@ export interface Database {
         Row: {
           id: string
           full_name: string | null
-          role: string
+          role: "user" | "admin" | "technician"
           created_at: string
           updated_at: string
+          email: string
+          phone: string | null
+          address: string | null
         }
         Insert: {
           id: string
           full_name?: string | null
-          role?: string
+          role?: "user" | "admin" | "technician"
           created_at?: string
           updated_at?: string
+          email: string
+          phone?: string | null
+          address?: string | null
         }
         Update: {
           id?: string
           full_name?: string | null
-          role?: string
+          role?: "user" | "admin" | "technician"
           created_at?: string
           updated_at?: string
+          email?: string
+          phone?: string | null
+          address?: string | null
         }
         Relationships: [
           {
@@ -41,100 +50,41 @@ export interface Database {
           }
         ]
       }
-      services: {
-        Row: {
-          id: string
-          name: string
-          description: string | null
-          price: number
-          duration_minutes: number | null
-          icon: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          description?: string | null
-          price: number
-          duration_minutes?: number | null
-          icon?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          description?: string | null
-          price?: number
-          duration_minutes?: number | null
-          icon?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      products: {
-        Row: {
-          id: string
-          name: string
-          description: string | null
-          price: number
-          image_url: string | null
-          stock: number
-          category: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          description?: string | null
-          price: number
-          image_url?: string | null
-          stock?: number
-          category?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          description?: string | null
-          price?: number
-          image_url?: string | null
-          stock?: number
-          category?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       reservations: {
         Row: {
           id: string
           user_id: string
-          service_id: string
-          booking_date: string
+          device_type: string
+          device_model: string
+          issue_description: string
+          status: "pending" | "confirmed" | "in_progress" | "completed" | "cancelled"
+          repair_status: "pending" | "diagnosing" | "repairing" | "completed" | "cancelled" | "ready" | "registered" | "received" | "picked_up" | null
+          reservation_date: string
+          booking_date: string | null
           booking_time: string | null
           problem_description: string | null
-          status: 'pending' | 'confirmed' | 'completed' | 'cancelled'
-          repair_status: 'registered' | 'received' | 'diagnosing' | 'repairing' | 'ready' | 'picked_up' | 'cancelled'
           device_info: string | null
+          service_id: string | null
           admin_notes: string | null
+          service: { name: string; price: number } | null
+          user: { full_name: string | null; email: string } | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
           user_id: string
-          service_id: string
-          booking_date: string
+          device_type?: string
+          device_model?: string
+          issue_description?: string
+          status?: "pending" | "confirmed" | "in_progress" | "completed" | "cancelled"
+          repair_status?: "pending" | "diagnosing" | "repairing" | "completed" | "cancelled" | "ready" | "registered" | "received" | "picked_up" | null
+          reservation_date?: string
+          booking_date?: string | null
           booking_time?: string | null
           problem_description?: string | null
-          status?: 'pending' | 'confirmed' | 'completed' | 'cancelled'
-          repair_status?: 'registered' | 'received' | 'diagnosing' | 'repairing' | 'ready' | 'picked_up' | 'cancelled'
           device_info?: string | null
+          service_id?: string | null
           admin_notes?: string | null
           created_at?: string
           updated_at?: string
@@ -142,25 +92,22 @@ export interface Database {
         Update: {
           id?: string
           user_id?: string
-          service_id?: string
-          booking_date?: string
+          device_type?: string
+          device_model?: string
+          issue_description?: string
+          status?: "pending" | "confirmed" | "in_progress" | "completed" | "cancelled"
+          repair_status?: "pending" | "diagnosing" | "repairing" | "completed" | "cancelled" | "ready" | "registered" | "received" | "picked_up" | null
+          reservation_date?: string
+          booking_date?: string | null
           booking_time?: string | null
           problem_description?: string | null
-          status?: 'pending' | 'confirmed' | 'completed' | 'cancelled'
-          repair_status?: 'registered' | 'received' | 'diagnosing' | 'repairing' | 'ready' | 'picked_up' | 'cancelled'
           device_info?: string | null
+          service_id?: string | null
           admin_notes?: string | null
           created_at?: string
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "reservations_service_id_fkey"
-            columns: ["service_id"]
-            isOneToOne: false
-            referencedRelation: "services"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "reservations_user_id_fkey"
             columns: ["user_id"]
@@ -170,82 +117,142 @@ export interface Database {
           }
         ]
       }
-      consultations: {
+      testimonials: {
         Row: {
           id: string
-          user_id: string | null
           name: string
-          email: string
-          phone: string | null
-          subject: string | null
-          message: string
-          status: 'new' | 'in_progress' | 'resolved'
-          admin_response: string | null
+          role: string
+          content: string
+          rating: number
+          avatar_url: string | null
           created_at: string
-          updated_at: string
         }
         Insert: {
           id?: string
-          user_id?: string | null
           name: string
-          email: string
-          phone?: string | null
-          subject?: string | null
-          message: string
-          status?: 'new' | 'in_progress' | 'resolved'
-          admin_response?: string | null
+          role: string
+          content: string
+          rating: number
+          avatar_url?: string | null
           created_at?: string
-          updated_at?: string
         }
         Update: {
           id?: string
-          user_id?: string | null
+          name?: string
+          role?: string
+          content?: string
+          rating?: number
+          avatar_url?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          id: string
+          name: string
+          description: string
+          price: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description: string
+          price: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string
+          price?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          id: string
+          name: string
+          description: string
+          price: number
+          stock: number
+          category: string
+          image_url: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description: string
+          price: number
+          stock: number
+          category: string
+          image_url?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string
+          price?: number
+          stock?: number
+          category?: string
+          image_url?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      consultations: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          phone: string | null
+          message: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          phone?: string | null
+          message: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
           name?: string
           email?: string
           phone?: string | null
-          subject?: string | null
           message?: string
-          status?: 'new' | 'in_progress' | 'resolved'
-          admin_response?: string | null
           created_at?: string
-          updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "consultations_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      handle_new_user: {
-        Args: Record<PropertyKey, never>
-        Returns: unknown
-      }
-      update_updated_at_column: {
-        Args: Record<PropertyKey, never>
-        Returns: unknown
-      }
+      [_ in never]: never
     }
     Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
       [_ in never]: never
     }
   }
 }
 
-export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
-export type InsertTables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert']
-export type UpdateTables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update']
+export type Tables<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Row"]
+export type Enums<T extends keyof Database["public"]["Enums"]> = Database["public"]["Enums"][T]
 
-export type Profile = Tables<'profiles'>
-export type Service = Tables<'services'>
-export type Product = Tables<'products'>
-export type Reservation = Tables<'reservations'>
-export type Consultation = Tables<'consultations'>
+export type Profile = Tables<"profiles">
+export type Reservation = Tables<"reservations">
+export type Testimonial = Tables<"testimonials">
+export type Service = Tables<"services">
+export type Product = Tables<"products">
+export type Consultation = Tables<"consultations">

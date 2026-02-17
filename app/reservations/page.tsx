@@ -145,7 +145,7 @@ export default function ReservationsPage() {
 
     if (!validationResult.success) {
       const errors: Partial<Record<keyof BookingFormData, string>> = {}
-      validationResult.error.errors.forEach((err) => {
+      validationResult.error.issues.forEach((err) => {
         const path = err.path[0] as keyof BookingFormData
         errors[path] = err.message
       })

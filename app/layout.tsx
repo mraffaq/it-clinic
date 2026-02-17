@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { ToastProvider } from "@/components/providers/toast-provider";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -33,11 +34,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
         <AuthProvider>
-          <Navigation />
-          <ErrorBoundary>
-            <main className="flex-1">{children}</main>
-          </ErrorBoundary>
-          <Footer />
+          <ToastProvider>
+            <Navigation />
+            <ErrorBoundary>
+              <main className="flex-1">{children}</main>
+            </ErrorBoundary>
+            <Footer />
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>

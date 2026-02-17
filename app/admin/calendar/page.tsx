@@ -29,7 +29,7 @@ type Reservation = {
   booking_date: string
   booking_time: string | null
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled'
-  repair_status: string
+  repair_status: 'pending' | 'diagnosing' | 'repairing' | 'completed' | 'cancelled' | 'ready' | 'registered' | 'received' | 'picked_up' | null
   problem_description: string | null
   device_info: string | null
   user: {
@@ -111,7 +111,7 @@ export default function AdminCalendarPage() {
     return reservations.filter((r) => isSameDay(parseISO(r.booking_date), day))
   }
 
-  const handleRepairStatusChange = async (reservationId: string, newStatus: string) => {
+  const handleRepairStatusChange = async (reservationId: string, newStatus: 'pending' | 'diagnosing' | 'repairing' | 'completed' | 'cancelled' | 'ready' | 'registered' | 'received' | 'picked_up') => {
     const { error } = await supabase
       .from('reservations')
       .update({ repair_status: newStatus })
@@ -286,7 +286,7 @@ export default function AdminCalendarPage() {
                         ${res.repair_status === 'ready' ? 'border-green-500 text-green-700' : ''}
                         ${res.repair_status === 'repairing' ? 'border-blue-500 text-blue-700' : ''}
                       `}>
-                        {repairStatusLabels[res.repair_status]}
+                        {repairStatusLabels[res.repair_status || "registered"]}
                       </Badge>
                     </div>
                   </CardContent>
@@ -344,8 +344,8 @@ export default function AdminCalendarPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Status Perbaikan</p>
                 <Select
-                  value={selectedReservation.repair_status}
-                  onValueChange={(value) => handleRepairStatusChange(selectedReservation.id, value)}
+                  value={selectedReservation.repair_status || undefined}
+                  onValueChange={(value) => handleRepairStatusChange(selectedReservation.id, value as any)}
                 >
                   <SelectTrigger className="w-full mt-1">
                     <SelectValue />
